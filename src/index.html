@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <title>RxJS</title>
+  <style>
+    .block {
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px 20px;
+      height: 500px;
+      overflow-y: auto;
+      text-align: center;
+    }
+    .loader {
+      margin: 0 auto; 
+      display: none;
+    }
+  </style>
+</head>
+<body style="padding-top: 1rem;">
+
+  <div class="container">
+    <div>
+      <div class="col s12">
+        <div class="input-field">
+          <input id="username" type="text">
+          <label for="username">Username</label>
+        </div>
+      </div>
+
+      <div style="display: flex;gap: 10px;">
+        <div class="block" id="list">
+          <div class="preloader-wrapper big active loader" id="loader">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div><div class="gap-patch">
+                <div class="circle"></div>
+              </div><div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="block" id="log"></div>
+      </div>
+
+      <div style="margin-top: 20px;display: flex;align-items: center;justify-content: space-between;">
+        <div style="width: 15%">
+          <a class="waves-effect waves-light btn" id="reset">Reset URL</a>
+        </div>
+
+        <div class="input-field" style="width: 68%;">
+          <input style="text-align: center" id="url" type="text">
+        </div>  
+        
+        <div style="width: 15%; text-align: right;">
+          <a class="waves-effect waves-light btn" id="clear">Clear LOG</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
