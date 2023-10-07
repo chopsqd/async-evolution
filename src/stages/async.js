@@ -21,6 +21,7 @@ function distinct(search) {
 
 const fetchData = async (search) => {
     if(!distinct(search)) {
+        changeLoading(true)
         try {
             const res = await fetch(`${url.value}?search=${search}`)
         
@@ -31,8 +32,9 @@ const fetchData = async (search) => {
             } else {
                 throw new Error(`Ошибка ${res.status}`);
             }
-            changeLoading(false)
         } catch(err) {
+            console.log(err)
+        } finally {
             changeLoading(false)
         }
     } 

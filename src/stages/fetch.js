@@ -24,6 +24,7 @@ const fetchData = (search) => {
         return
     } 
 
+    changeLoading(true)
     fetch(`https://api.slingacademy.com/v1/sample-data/users?search=${search}`)
         .then(res => {
             if (res.status === 200) {

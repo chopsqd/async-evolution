@@ -1,3 +1,6 @@
+import { throwError, catchError, fromEvent } from 'rxjs';
+import {map, debounceTime, distinctUntilChanged, switchMap, finalize, tap, retry} from 'rxjs/operators'
+import {ajax} from 'rxjs/ajax'
 import {showLog, clearLog} from './utils/log'
 
 //==========    BASE    ==========//
@@ -14,9 +17,23 @@ url.value = BASE_URL
 
 function changeLoading(flag) {
     if(flag) {
-        loader.style.display = 'block'   
+        list.innerHTML = `
+            <div class="preloader-wrapper big active loader" style="margin: 0 auto">
+                <div class="spinner-layer spinner-blue-only">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="gap-patch">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="circle-clipper right">
+                        <div class="circle"></div>
+                    </div>
+                </div>
+            </div>
+        `
     } else {
-        loader.style.display = 'none'   
+        document.querySelector('.loader').remove()
     }
 }
 
@@ -45,11 +62,10 @@ function renderData(data) {
     }
 }
 
-//==========    CALLBACKS    ==========//
 reset.addEventListener('click', () => url.value = BASE_URL)
 clear.addEventListener('click', clearLog)
-input.addEventListener('input', debounce(e => fetchData(e.target.value), 1000));
-input.addEventListener('input', e => showLog('input.addEventListener', e.target.value, 'cyan accent-1', 'input'));
+//input.addEventListener('input', debounce(e => fetchData(e.target.value), 1000));
+//input.addEventListener('input', e => showLog('input.addEventListener', e.target.value, 'cyan accent-1', 'input'));
 
 function debounce(func, timeout) {
     let timer;
@@ -111,6 +127,7 @@ const getByFetch = (search) => {
         return
     } 
     showLog('distinct', 'lastSearchValue !== search', 'light-green accent-3', 'distinct')
+    changeLoading(true)
 
     showLog('fetch', search, 'green', 'to-server')
     showLog('DATABASE', search, 'deep-purple', 'load-server') 
@@ -138,7 +155,8 @@ const getByFetch = (search) => {
 const getByAsync = async (search) => {
     if(!distinct(search)) {
         showLog('distinct', 'lastSearchValue !== search', 'light-green accent-3', 'distinct')
-
+        
+        changeLoading(true)
         try {
             showLog('async', search, 'green', 'to-server')
             showLog('DATABASE', search, 'deep-purple', 'load-server') 
@@ -153,10 +171,10 @@ const getByAsync = async (search) => {
                 showLog('await', 'res.status !== 200', 'red', 'err-res')
                 throw new Error(`Ошибка ${res.status}`);
             }
-            changeLoading(false)
-        } catch(err) {
-            changeLoading(false)
+        } catch(err) {            
             showLog('try..catch(err)', `${err}`, 'red', 'err-req')
+        } finally {
+            changeLoading(false)
         }
     } else {
         showLog('distinct', 'lastSearchValue === search', 'red', 'distinct')
@@ -164,31 +182,27 @@ const getByAsync = async (search) => {
     }
 }
 
-const fetchData = async (search) => {
-    if(!distinct(search)) {
-        showLog('distinct', 'lastSearchValue !== search', 'light-green accent-3', 'distinct')
-
-        try {
-            showLog('async', search, 'green', 'to-server')
+fromEvent(input, 'input')
+    .pipe(
+        map(e => e.target.value),
+        debounceTime(1000),
+        distinctUntilChanged(),
+        tap(() => showLog('distinctUntilChanged', 'lastSearchValue !== search', 'light-green accent-3', 'distinct')),
+        tap(() => changeLoading(true)),
+        switchMap(search => {
+            showLog('ajax.getJSON', search, 'green', 'to-server')
             showLog('DATABASE', search, 'deep-purple', 'load-server') 
-            const res = await fetch(`${url.value}?search=${search}`)
-        
-            if (res.status === 200) {
-                const response = await res.json();
-                showLog('await', 'res.status === 200', 'green', 'from-server')
-
-                renderData(response.users)
-            } else {
-                showLog('await', 'res.status !== 200', 'red', 'err-res')
-                throw new Error(`Ошибка ${res.status}`);
-            }
-            changeLoading(false)
-        } catch(err) {
-            changeLoading(false)
-            showLog('try..catch(err)', `${err}`, 'red', 'err-req')
-        }
-    } else {
-        showLog('distinct', 'lastSearchValue === search', 'red', 'distinct')
-        return
-    }
-}
+            return ajax.getJSON(`${url.value}?search=${search}`)
+                .pipe(
+                    catchError(err => {
+                        console.log('Ошибка: ', err)
+                        showLog('catchError', `Ошибка: ${err.message}`, 'red', 'err-res')
+                        return throwError(() => new Error(`Ошибка: ${err.message}`))
+                    }),
+                    tap(() => showLog('ajax.getJSON', 'res.status === 200', 'green', 'from-server'))
+                )
+        }),
+        finalize(() => changeLoading(false)),
+        retry(),
+    )
+    .subscribe(response => renderData(response.users))
