@@ -1,4 +1,4 @@
-import {showLog, clearLog} from './log'
+import {showLog, clearLog} from './utils/log'
 
 //==========    BASE    ==========//
 const BASE_URL = "https://api.slingacademy.com/v1/sample-data/users"
@@ -69,7 +69,7 @@ function distinct(search) {
     } else return true
 }
 
-const fetchData = (search) => {
+const getByXhr = (search) => {
     if(distinct(search)) {
         showLog('distinct', 'lastSearchValue === search', 'red', 'distinct')
         return
@@ -82,30 +82,55 @@ const fetchData = (search) => {
         changeLoading(true)
     }
     
-    console.log(url)
     xhr.open('GET', `${url.value}?search=${search}`)
     xhr.send();
-    showLog('fetchData', search, 'green', 'to-server')
-    showLog('fetchData', search, 'deep-purple', 'load-server')
+    showLog('xhr.send()', search, 'green', 'to-server')
+    showLog('DATABASE', search, 'deep-purple', 'load-server')
 
     xhr.onloadend = function() {
         if (xhr.status === 200) {
           const response = JSON.parse(xhr.responseText);
-          showLog('fetchData', search, 'green', 'from-server')
+          showLog('xhr.onloadend', 'xhr.status === 200', 'green', 'from-server')
 
           renderData(response.users)
-          changeLoading(false)
         } else {
-            changeLoading(false)
-            console.log(`Ошибка ${xhr.status}: ${JSON.parse(xhr.responseText).detail}`, xhr)
-            showLog('fetchData', `Ошибка ${xhr.status}: ${JSON.parse(xhr.responseText).detail}`, 'red', 'err-res')
+            showLog('xhr.onloadend', 'xhr.status !== 200', 'red', 'err-res')
         }
+        changeLoading(false)
     };
 
     xhr.onerror = function() {
         changeLoading(false)
-        console.log('Запрос не удался')
-        showLog('fetchData', 'Запрос не удался', 'red', 'err-req')
+        showLog('xhr.onerror', 'Запрос не удался', 'red', 'err-req')
     }
 }
 
+const fetchData = (search) => {
+    if(distinct(search)) {
+        showLog('distinct', 'lastSearchValue === search', 'red', 'distinct')
+        return
+    } 
+    showLog('distinct', 'lastSearchValue !== search', 'light-green accent-3', 'distinct')
+
+    showLog('fetch', search, 'green', 'to-server')
+    showLog('DATABASE', search, 'deep-purple', 'load-server') 
+    fetch(`${url.value}?search=${search}`)
+        .then(res => {
+            if (res.status === 200) {
+                showLog('then(res)', 'res.status === 200', 'green', 'from-server')
+                return res.json();
+            } else {
+                showLog('then(res)', 'res.status !== 200', 'red', 'err-res')
+                throw new Error(`Ошибка ${res.status}`);
+            }
+        })
+        .then(data => {
+            renderData(data.users)
+        })
+        .catch(err => {
+            showLog('catch(err)', `${err}`, 'red', 'err-req')
+        })
+        .finally(() => {
+            changeLoading(false)
+        })
+}

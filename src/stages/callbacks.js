@@ -38,11 +38,10 @@ const fetchData = (search) => {
           const response = JSON.parse(xhr.responseText);
 
           renderData(response.users)
-          changeLoading(false)
         } else {
-            changeLoading(false)
-            console.log(`Ошибка ${xhr.status}: ${JSON.parse(xhr.responseText).detail}`, xhr)
+            console.log(`Ошибка ${xhr.status}: ${JSON.parse(xhr.responseText).detail}`)
         }
+        changeLoading(false)
     };
 
     xhr.onerror = function() {
