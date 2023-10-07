@@ -105,7 +105,7 @@ const getByXhr = (search) => {
     }
 }
 
-const fetchData = (search) => {
+const getByFetch = (search) => {
     if(distinct(search)) {
         showLog('distinct', 'lastSearchValue === search', 'red', 'distinct')
         return
@@ -133,4 +133,62 @@ const fetchData = (search) => {
         .finally(() => {
             changeLoading(false)
         })
+}
+
+const getByAsync = async (search) => {
+    if(!distinct(search)) {
+        showLog('distinct', 'lastSearchValue !== search', 'light-green accent-3', 'distinct')
+
+        try {
+            showLog('async', search, 'green', 'to-server')
+            showLog('DATABASE', search, 'deep-purple', 'load-server') 
+            const res = await fetch(`${url.value}?search=${search}`)
+        
+            if (res.status === 200) {
+                const response = await res.json();
+                showLog('await', 'res.status === 200', 'green', 'from-server')
+
+                renderData(response.users)
+            } else {
+                showLog('await', 'res.status !== 200', 'red', 'err-res')
+                throw new Error(`Ошибка ${res.status}`);
+            }
+            changeLoading(false)
+        } catch(err) {
+            changeLoading(false)
+            showLog('try..catch(err)', `${err}`, 'red', 'err-req')
+        }
+    } else {
+        showLog('distinct', 'lastSearchValue === search', 'red', 'distinct')
+        return
+    }
+}
+
+const fetchData = async (search) => {
+    if(!distinct(search)) {
+        showLog('distinct', 'lastSearchValue !== search', 'light-green accent-3', 'distinct')
+
+        try {
+            showLog('async', search, 'green', 'to-server')
+            showLog('DATABASE', search, 'deep-purple', 'load-server') 
+            const res = await fetch(`${url.value}?search=${search}`)
+        
+            if (res.status === 200) {
+                const response = await res.json();
+                showLog('await', 'res.status === 200', 'green', 'from-server')
+
+                renderData(response.users)
+            } else {
+                showLog('await', 'res.status !== 200', 'red', 'err-res')
+                throw new Error(`Ошибка ${res.status}`);
+            }
+            changeLoading(false)
+        } catch(err) {
+            changeLoading(false)
+            showLog('try..catch(err)', `${err}`, 'red', 'err-req')
+        }
+    } else {
+        showLog('distinct', 'lastSearchValue === search', 'red', 'distinct')
+        return
+    }
 }

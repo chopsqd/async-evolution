@@ -1,4 +1,4 @@
-//==========    FETCH    ==========//
+//==========    ASYNC/AWAIT    ==========//
 input.addEventListener('input', debounce(e => fetchData(e.target.value), 1000));
 
 function debounce(func, timeout) {
@@ -19,26 +19,21 @@ function distinct(search) {
     } else return true
 }
 
-const fetchData = (search) => {
-    if(distinct(search)) {
-        return
-    } 
-
-    fetch(`https://api.slingacademy.com/v1/sample-data/users?search=${search}`)
-        .then(res => {
+const fetchData = async (search) => {
+    if(!distinct(search)) {
+        try {
+            const res = await fetch(`${url.value}?search=${search}`)
+        
             if (res.status === 200) {
-                return res.json();
+                const response = await res.json();
+    
+                renderData(response.users)
             } else {
                 throw new Error(`Ошибка ${res.status}`);
             }
-        })
-        .then(data => {
-            renderData(data.users)
-        })
-        .catch(err => {
-            console.log(err)
-        })
-        .finally(() => {
             changeLoading(false)
-        })
+        } catch(err) {
+            changeLoading(false)
+        }
+    } 
 }
