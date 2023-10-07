@@ -15,6 +15,6 @@ fromEvent(input, 'input')
             }),
         )),
         finalize(() => changeLoading(false)),
-        retry(),
+        retry()
     )
     .subscribe(response => renderData(response.users))

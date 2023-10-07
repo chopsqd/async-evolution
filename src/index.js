@@ -3,15 +3,19 @@ import {map, debounceTime, distinctUntilChanged, switchMap, finalize, tap, retry
 import {ajax} from 'rxjs/ajax'
 import {showLog, clearLog} from './utils/log'
 
+document.addEventListener('DOMContentLoaded', () => 
+    M.FormSelect.init(document.querySelectorAll('select'))
+);
+
 //==========    BASE    ==========//
 const BASE_URL = "https://api.slingacademy.com/v1/sample-data/users"
 
-let loader = document.getElementById('loader')
 let input = document.getElementById('username')
 let list = document.getElementById('list')
 let url = document.getElementById('url')
 let reset = document.getElementById('reset')
 let clear = document.getElementById('clear')
+let select = document.getElementById('select')
 
 url.value = BASE_URL
 
@@ -33,7 +37,8 @@ function changeLoading(flag) {
             </div>
         `
     } else {
-        document.querySelector('.loader').remove()
+        if(document.querySelector('.loader'))
+            document.querySelector('.loader').remove()
     }
 }
 
@@ -62,11 +67,6 @@ function renderData(data) {
     }
 }
 
-reset.addEventListener('click', () => url.value = BASE_URL)
-clear.addEventListener('click', clearLog)
-//input.addEventListener('input', debounce(e => fetchData(e.target.value), 1000));
-//input.addEventListener('input', e => showLog('input.addEventListener', e.target.value, 'cyan accent-1', 'input'));
-
 function debounce(func, timeout) {
     let timer;
     return function(...args) {
@@ -84,6 +84,40 @@ function distinct(search) {
         return false
     } else return true
 }
+
+function onTechnoChange(e) {
+    lastSearchValue = ''
+    input.value = ''
+    list.innerHTML = ''
+    changeTechnology(input.value, e.target.value)
+    clearLog()
+}
+
+let sub;
+function changeTechnology(value, method) {
+    if(sub) {
+        sub.unsubscribe();
+    }
+
+    switch(method) {
+        case 'XHR': 
+            return getByXhr(value);
+        case 'Fetch': 
+            return getByFetch(value);
+        case 'Async/Await': 
+            return getByAsync(value);
+        case 'RxJS': 
+            sub = input$.subscribe(response => renderData(response.users));
+            break;
+        case 'OFF': return () => {}
+    }
+}
+
+reset.addEventListener('click', () => url.value = BASE_URL)
+clear.addEventListener('click', clearLog)
+input.addEventListener('input', debounce(e => changeTechnology(e.target.value, select.value), 1000));
+select.addEventListener('change', onTechnoChange);
+input.addEventListener('input', e => showLog('input.addEventListener', e.target.value, 'cyan accent-1', 'input'));
 
 const getByXhr = (search) => {
     if(distinct(search)) {
@@ -182,10 +216,10 @@ const getByAsync = async (search) => {
     }
 }
 
-fromEvent(input, 'input')
+const input$ = fromEvent(input, 'input')
     .pipe(
         map(e => e.target.value),
-        debounceTime(1000),
+        //debounceTime(1000), //TODO: Fix this bag
         distinctUntilChanged(),
         tap(() => showLog('distinctUntilChanged', 'lastSearchValue !== search', 'light-green accent-3', 'distinct')),
         tap(() => changeLoading(true)),
@@ -205,4 +239,3 @@ fromEvent(input, 'input')
         finalize(() => changeLoading(false)),
         retry(),
     )
-    .subscribe(response => renderData(response.users))

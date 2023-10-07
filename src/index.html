@@ -18,16 +18,32 @@
       overflow-y: auto;
       text-align: center;
     }
+    .flex {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
   </style>
 </head>
 <body style="padding-top: 1rem;">
 
   <div class="container">
     <div>
-      <div class="col s12">
-        <div class="input-field">
+      <div class="flex">
+        <div class="input-field" style="width: 68%">
           <input id="username" type="text">
           <label for="username">Username</label>
+        </div>
+
+        <div class="input-field" style="width: 30%">
+          <select id="select">
+            <option value="XHR">XHR</option>
+            <option value="Fetch">Fetch</option>
+            <option value="Async/Await">Async/Await</option>
+            <option value="RxJS">RxJS</option>
+            <option value="OFF">OFF</option>
+          </select>
         </div>
       </div>
 
@@ -36,7 +52,7 @@
         <div class="block" id="log"></div>
       </div>
 
-      <div style="margin-top: 20px;display: flex;align-items: center;justify-content: space-between;">
+      <div class="flex">
         <div style="width: 15%">
           <a class="waves-effect waves-light btn" id="reset">Reset URL</a>
         </div>
