@@ -95,7 +95,9 @@ function onTechnoChange(e) {
 
 let sub;
 function changeTechnology(value, method) {
-    if(sub) {
+    if(sub && method === 'RxJS') {
+        return
+    } else if(sub) {
         sub.unsubscribe();
     }
 
@@ -219,7 +221,7 @@ const getByAsync = async (search) => {
 const input$ = fromEvent(input, 'input')
     .pipe(
         map(e => e.target.value),
-        //debounceTime(1000), //TODO: Fix this bag
+        debounceTime(1000),
         distinctUntilChanged(),
         tap(() => showLog('distinctUntilChanged', 'lastSearchValue !== search', 'light-green accent-3', 'distinct')),
         tap(() => changeLoading(true)),
